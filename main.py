@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
-from keras import Keras as krs
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
 
 img = cv2.imread()
