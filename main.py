@@ -4,11 +4,12 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from keras.preprocessing.image import ImageDataGenerator
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score, train_test_split
+
+ImageDataGenerator = tf.keras.preprocessing.image.ImageDataGenerator
 
 
-def load_data(img_size=(32, 32), test_size=0.2, train_size=0.8):
+def load_data(img_size=(32, 32), test_size=0.3, train_size=0.7):
     # Load the data into memory
     defect_dir = 'defective'
     non_defect_dir = 'non_defective'
@@ -56,36 +57,48 @@ def load_data(img_size=(32, 32), test_size=0.2, train_size=0.8):
     return train_imgs, train_labels, test_imgs, test_labels
 
 
-# Load the data
-train_imgs, train_labels, val_imgs, val_labels = load_data()
+def create_model():
+    # Define the CNN model
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(64, activation='relu'),
+        tf.keras.layers.Dense(2, activation='softmax')
+    ])
 
-# Define the CNN model
-model = tf.keras.models.Sequential([
-    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(64, activation='relu'),
-    tf.keras.layers.Dense(2, activation='softmax')
-])
+    # Compile the model
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    return model
 
-# Compile the model
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-# Train the model
-history = model.fit(train_imgs, train_labels, epochs=10, batch_size=32, validation_data=(val_imgs, val_labels))
+if __name__ == '__main__':
+    # Load the data
+    train_imgs, train_labels, val_imgs, val_labels = load_data()
 
-# Plot the training and validation accuracy
-plt.plot(history.history['accuracy'])
-plt.plot(history.history['val_accuracy'])
-plt.title('Model accuracy')
-plt.ylabel('Accuracy')
-plt.xlabel('Epoch')
-plt.legend(['Train', 'Validation'], loc='upper left')
-plt.show()
+    # Define the CNN model
+    model = create_model()
 
-# Evaluate the model on the validation set
-val_loss, val_acc = model.evaluate(val_imgs, val_labels)
-print("Validation loss:", val_loss)
-print("Validation accuracy:", val_acc)
+    # Train the model
+    history = model.fit(train_imgs, train_labels, epochs=10, batch_size=32, validation_data=(val_imgs, val_labels))
+
+    # Plot the training and validation accuracy
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('Model accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Validation'], loc='upper left')
+    plt.show()
+
+    # Evaluate the model on the validation set
+    val_loss, val_acc = model.evaluate(val_imgs, val_labels)
+    print("Validation loss:", val_loss)
+    print("Validation accuracy:", val_acc)
+
+# # Perform cross-validation
+# scores = cross_val_score(model, train_imgs, train_labels, cv=5, scoring='accuracy')
+# print("Cross-validation scores:", scores)
+# print("Mean cross-validation score:", np.mean(scores))
