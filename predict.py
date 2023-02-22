@@ -1,0 +1,56 @@
+import os
+
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+
+# Load the model
+model = tf.keras.models.load_model('model.h5')
+
+
+# Define the function to create the annotations
+def create_annotation(image, bboxes):
+    # Draw bounding boxes around the detected objects
+    for bbox in bboxes:
+        x1, y1, x2, y2 = bbox
+        cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+    return image
+
+
+def get_bounding_boxes(predictions, threshold=0.5):
+    # Threshold the predictions to get binary values
+    binary_predictions = np.where(predictions > threshold, 1, 0)
+    # Find the coordinates of the bounding boxes
+    bboxes = []
+    for prediction in binary_predictions:
+        y, x = np.where(prediction)
+        if len(y) > 0 and len(x) > 0:
+            ymin, ymax = min(y), max(y)
+            xmin, xmax = min(x), max(x)
+            bboxes.append((xmin, ymin, xmax, ymax))
+        else:
+            bboxes.append((0, 0, 0, 0))
+    return bboxes
+
+
+# Define the root directory and the input and output directories
+root_dir = 'C:/Programming/FinalYearProject/original/defective'
+input_dir = os.path.join(root_dir, 'defective')
+output_dir = os.path.join(root_dir, 'output')
+
+# Load the images from the input directory and create a dataset
+image_paths = tf.io.gfile.glob(input_dir + '/*.jpg')
+dataset = tf.data.Dataset.from_tensor_slices(image_paths)
+dataset = dataset.map(lambda x: tf.io.read_file(x))
+dataset = dataset.map(lambda x: tf.image.decode_jpeg(x, channels=3))
+dataset = dataset.batch(32)
+
+for images, labels in dataset:
+    predictions = model.predict(images)
+    bboxes = get_bounding_boxes(predictions)
+    annotated_images = tf.data.Dataset.from_tensor_slices((images, bboxes)).map(create_annotation)
+    # Visualize the annotated images
+    for annotated_image in annotated_images.take(1):
+        plt.imshow(annotated_image[0].numpy())
+        plt.show()
