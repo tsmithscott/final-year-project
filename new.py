@@ -4,7 +4,10 @@ import numpy as np
 #import PIL
 import tensorflow as tf
 
-root_dir = 'C:/Programming/FinalYearProject/dataset512x512'
+# Windows
+# root_dir = 'C:/Programming/FinalYearProject/dataset512x512'
+# Mac
+root_dir = '/Users/theo/VSCode/FinalYearProject/dataset512x512'
 
 train_ds = tf.keras.preprocessing.image_dataset_from_directory(
     root_dir,
