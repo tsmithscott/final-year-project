@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 
 from utils.preprocessing import normalize_data
-from utils.visualisation import plot_model_performance, view_images
+from utils.visualisation import plot_model_performance, visualize_images, visualize_augmented_images
 
 # Windows
 root_dir = 'C:/Programming/FinalYearProject/dataset512x512'
@@ -37,11 +37,15 @@ class_names = train_ds.class_names
 print(class_names)
 
 
-# Visualize the pre-categorized data
-view_images(train_ds, class_names)
+# Visualize the original images
+visualize_images(train_ds, class_names)
+
+# Visualize augmented images
+visualize_augmented_images(train_ds)
 
 
-# Normalise the data to the range [0, 1]
+# Normalise the data to the range [0, 1] and print the min and max values
+# Not used in the model currently
 normalize_data(train_ds)
 
 

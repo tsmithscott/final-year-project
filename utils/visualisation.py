@@ -1,14 +1,31 @@
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
 
 # Visualize 9 pre-categorized images from the training dataset
-def view_images(train_ds, class_names):
+def visualize_images(train_ds, class_names):
     plt.figure(figsize=(10, 10))
     for images, labels in train_ds.take(1):
         for i in range(9):
             ax = plt.subplot(3, 3, i + 1)
             plt.imshow(images[i].numpy().astype("uint8"))
             plt.title(class_names[labels[i].numpy()[0].astype(int)])
+            plt.axis("off")
+            
+
+# Visualize 9 augmented images from the training dataset
+def visualize_augmented_images(train_ds):
+    data_augmentation = tf.keras.Sequential([
+        tf.keras.layers.experimental.preprocessing.RandomFlip("horizontal_and_vertical"),
+        tf.keras.layers.experimental.preprocessing.RandomRotation(0.2),
+        tf.keras.layers.experimental.preprocessing.RandomZoom(0.2)
+    ])
+    plt.figure(figsize=(10, 10))
+    for images, _ in train_ds.take(1):
+        for i in range(9):
+            augmented_images = data_augmentation(images)
+            ax = plt.subplot(3, 3, i + 1)
+            plt.imshow(augmented_images[0].numpy().astype("uint8"))
             plt.axis("off")
 
 
