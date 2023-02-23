@@ -37,16 +37,16 @@ class_names = train_ds.class_names
 print(class_names)
 
 
-# Visualize the original images
-visualize_images(train_ds, class_names)
+# # Visualize the original images
+# visualize_images(train_ds, class_names)
 
-# Visualize augmented images
-visualize_augmented_images(train_ds)
+# # Visualize augmented images
+# visualize_augmented_images(train_ds)
 
 
-# Normalise the data to the range [0, 1] and print the min and max values
-# Not used in the model currently
-normalize_data(train_ds)
+# # Normalise the data to the range [0, 1] and print the min and max values
+# # Not used in the model currently
+# normalize_data(train_ds)
 
 
 # Configure the dataset for performance
@@ -59,6 +59,7 @@ val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 num_classes = len(class_names)
 model = tf.keras.Sequential([
     tf.keras.layers.experimental.preprocessing.Rescaling(1./255, input_shape=(512, 512, 3)),
+    tf.keras.layers.experimental.preprocessing.Resizing(32, 32),
     tf.keras.layers.Conv2D(16, 3, padding='same', activation='relu'),
     tf.keras.layers.MaxPooling2D(),
     tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
@@ -90,5 +91,5 @@ history = model.fit(
 )
 
 
-# Analyze the model
+# Analyze the model's performance
 plot_model_performance(history, epochs)
