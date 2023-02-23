@@ -1,34 +1,37 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import tensorflow as tf
+from sklearn.model_selection import KFold
 
-from utils.preprocessing import normalize_data
-from utils.visualisation import plot_model_performance, visualize_images, visualize_augmented_images
+from utils.visualisation import (plot_model_performance,
+                                 visualize_augmented_images, visualize_images)
 
-# Windows
-root_dir = 'C:/Programming/FinalYearProject/dataset512x512'
-# # Mac
-# root_dir = '/Users/theo/VSCode/FinalYearProject/dataset512x512'
+# # Windows
+# root_dir = 'C:/Programming/FinalYearProject/dataset512x512'
+# Mac
+root_dir = '/Users/theo/VSCode/FinalYearProject/dataset512x512'
 
 
 # Load the data and split it into training and validation sets
 train_ds = tf.keras.preprocessing.image_dataset_from_directory(
     root_dir,
-    validation_split=0.3,
+    validation_split=0.2,
     subset="training",
     seed=123,
     image_size=(512, 512),
     batch_size=32,
-    label_mode="binary"
+    labels="inferred",
+    label_mode="binary",
+    color_mode="rgb"
 )
 val_ds = tf.keras.preprocessing.image_dataset_from_directory(
     root_dir,
-    validation_split=0.3,
+    validation_split=0.2,
     subset="validation",
     seed=123,
     image_size=(512, 512),
     batch_size=32,
-    label_mode="binary"
+    labels="inferred",
+    label_mode="binary",
+    color_mode="rgb"
 )
 
 
@@ -65,6 +68,7 @@ data_augmentation = tf.keras.Sequential([
   tf.keras.layers.RandomFlip("horizontal_and_vertical"),
   tf.keras.layers.RandomRotation(0.2),
 ])
+
 
 # Define number of model classes
 num_classes = len(class_names)
