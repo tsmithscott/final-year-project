@@ -55,11 +55,24 @@ train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
 val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
 
-# Create the model
+# Define preprocessing layers
+img_size = 32
+resize_and_rescale = tf.keras.Sequential([
+  tf.keras.layers.Resizing(img_size, img_size, input_shape=(512, 512, 3)),
+  tf.keras.layers.Rescaling(1./255)
+])
+data_augmentation = tf.keras.Sequential([
+  tf.keras.layers.RandomFlip("horizontal_and_vertical"),
+  tf.keras.layers.RandomRotation(0.2),
+])
+
+# Define number of model classes
 num_classes = len(class_names)
+
+# Create the model
 model = tf.keras.Sequential([
-    tf.keras.layers.experimental.preprocessing.Rescaling(1./255, input_shape=(512, 512, 3)),
-    tf.keras.layers.experimental.preprocessing.Resizing(32, 32),
+    resize_and_rescale,
+    data_augmentation,
     tf.keras.layers.Conv2D(16, 3, padding='same', activation='relu'),
     tf.keras.layers.MaxPooling2D(),
     tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
