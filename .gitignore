@@ -162,3 +162,5 @@ cython_debug/
 # Custom
 dataset512x512/
 original/
+model.h5
+detection/model.h5

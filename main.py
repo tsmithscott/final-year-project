@@ -4,10 +4,10 @@ from sklearn.model_selection import KFold
 from utils.visualisation import (plot_model_performance,
                                  visualize_augmented_images, visualize_images)
 
-# # Windows
-# root_dir = 'C:/Programming/FinalYearProject/dataset512x512'
-# Mac
-root_dir = '/Users/theo/VSCode/FinalYearProject/dataset512x512'
+# Windows
+root_dir = 'C:/Programming/FinalYearProject/dataset512x512'
+# # Mac
+# root_dir = '/Users/theo/VSCode/FinalYearProject/dataset512x512'
 
 
 # Load the data and split it into training and validation sets
@@ -58,40 +58,43 @@ train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
 val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
 
-# Define preprocessing layers
-img_size = 32
-resize_and_rescale = tf.keras.Sequential([
-  tf.keras.layers.Resizing(img_size, img_size, input_shape=(512, 512, 3)),
-  tf.keras.layers.Rescaling(1./255)
-])
-data_augmentation = tf.keras.Sequential([
-  tf.keras.layers.RandomFlip("horizontal_and_vertical"),
-  tf.keras.layers.RandomRotation(0.2),
-])
+# # Define preprocessing layers
+# img_size = 32
+# resize_and_rescale = tf.keras.Sequential([
+#   tf.keras.layers.Resizing(img_size, img_size, input_shape=(512, 512, 3)),
+#   tf.keras.layers.Rescaling(1./255)
+# ])
+# data_augmentation = tf.keras.Sequential([
+#   tf.keras.layers.RandomFlip("horizontal_and_vertical"),
+#   tf.keras.layers.RandomRotation(0.2),
+# ])
 
 
-# Define number of model classes
-num_classes = len(class_names)
+# # Define number of model classes
+# num_classes = len(class_names)
 
 # Create the model
 model = tf.keras.Sequential([
-    resize_and_rescale,
-    data_augmentation,
-    tf.keras.layers.Conv2D(16, 3, padding='same', activation='relu'),
-    tf.keras.layers.MaxPooling2D(),
+    tf.keras.layers.experimental.preprocessing.Rescaling(1./255, input_shape=(512, 512, 3)),
+    tf.keras.layers.experimental.preprocessing.Resizing(128,128),
     tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
     tf.keras.layers.MaxPooling2D(),
     tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
+    tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
+    tf.keras.layers.MaxPooling2D(),
+    tf.keras.layers.Conv2D(128, 3, padding='same', activation='relu'),
+    tf.keras.layers.Conv2D(128, 3, padding='same', activation='relu'),
     tf.keras.layers.MaxPooling2D(),
     tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(num_classes)
+    tf.keras.layers.Dense(1024, activation='relu'),
+    tf.keras.layers.Dense(1024, activation='relu'),
+    tf.keras.layers.Dense(2, activation='sigmoid')
 ])
 
 
 # Compile the model with an optimization function
 model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
               metrics=['accuracy'])
 
 
@@ -107,6 +110,7 @@ history = model.fit(
     epochs=epochs
 )
 
+model.save('model.h5')
 
 # Analyze the model's performance
 plot_model_performance(history, epochs)
