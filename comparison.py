@@ -6,7 +6,7 @@ from sklearn.svm import SVC
 from tensorflow import keras
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-path = '/Users/theo/VSCode/FinalYearProject/dataset512x512'
+path = 'C:/Programming/FinalYearProject/dataset512x512'
 
 # Define the parameters for the ImageDataGenerator
 datagen = ImageDataGenerator(

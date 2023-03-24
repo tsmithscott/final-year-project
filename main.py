@@ -1,5 +1,4 @@
 import tensorflow as tf
-from sklearn.model_selection import KFold
 
 from utils.visualisation import (plot_model_performance,
                                  visualize_augmented_images, visualize_images)
@@ -8,7 +7,6 @@ from utils.visualisation import (plot_model_performance,
 root_dir = 'C:/Programming/FinalYearProject/dataset512x512'
 # # Mac
 # root_dir = '/Users/theo/VSCode/FinalYearProject/dataset512x512'
-
 
 # Load the data and split it into training and validation sets
 train_ds = tf.keras.preprocessing.image_dataset_from_directory(
@@ -34,44 +32,14 @@ val_ds = tf.keras.preprocessing.image_dataset_from_directory(
     color_mode="rgb"
 )
 
-
 # Print the class names
 class_names = train_ds.class_names
 print(class_names)
-
-
-# # Visualize the original images
-# visualize_images(train_ds, class_names)
-
-# # Visualize augmented images
-# visualize_augmented_images(train_ds)
-
-
-# # Normalise the data to the range [0, 1] and print the min and max values
-# # Not used in the model currently
-# normalize_data(train_ds)
-
 
 # Configure the dataset for performance
 AUTOTUNE = tf.data.AUTOTUNE
 train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
 val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
-
-
-# # Define preprocessing layers
-# img_size = 32
-# resize_and_rescale = tf.keras.Sequential([
-#   tf.keras.layers.Resizing(img_size, img_size, input_shape=(512, 512, 3)),
-#   tf.keras.layers.Rescaling(1./255)
-# ])
-# data_augmentation = tf.keras.Sequential([
-#   tf.keras.layers.RandomFlip("horizontal_and_vertical"),
-#   tf.keras.layers.RandomRotation(0.2),
-# ])
-
-
-# # Define number of model classes
-# num_classes = len(class_names)
 
 # Create the model
 model = tf.keras.Sequential([

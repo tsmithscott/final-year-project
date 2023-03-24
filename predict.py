@@ -35,18 +35,20 @@ def get_bounding_boxes(predictions, threshold=0.5):
 
 
 # Define the root directory and the input and output directories
-root_dir = 'C:/Programming/FinalYearProject/original/defective'
+root_dir = 'C:/Programming/FinalYearProject/dataset512x512'
 input_dir = os.path.join(root_dir, 'defective')
 output_dir = os.path.join(root_dir, 'output')
 
 # Load the images from the input directory and create a dataset
-image_paths = tf.io.gfile.glob(input_dir + '/*.jpg')
+image_paths = tf.io.gfile.glob(input_dir + '/*.jpeg')
+print(image_paths)
+print(type(image_paths[0]))
 dataset = tf.data.Dataset.from_tensor_slices(image_paths)
 dataset = dataset.map(lambda x: tf.io.read_file(x))
 dataset = dataset.map(lambda x: tf.image.decode_jpeg(x, channels=3))
 dataset = dataset.batch(32)
 
-for images, labels in dataset:
+for images, labels in dataset.take:
     predictions = model.predict(images)
     bboxes = get_bounding_boxes(predictions)
     annotated_images = tf.data.Dataset.from_tensor_slices((images, bboxes)).map(create_annotation)
@@ -54,3 +56,17 @@ for images, labels in dataset:
     for annotated_image in annotated_images.take(1):
         plt.imshow(annotated_image[0].numpy())
         plt.show()
+
+# Get the first image and its corresponding label from the dataset
+first_image, first_label = next(iter(dataset))
+
+# Make predictions for the first image
+predictions = model.predict(tf.expand_dims(first_image, axis=0))
+bboxes = get_bounding_boxes(predictions)
+
+# Create an annotated image for the first image
+annotated_image = create_annotation(first_image, bboxes)
+
+# Visualize the annotated image
+plt.imshow(annotated_image.numpy())
+plt.show()
