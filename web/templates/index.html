@@ -10,7 +10,7 @@
 </head>
 <body>
     <div id="content p-5" class="flexbox">
-        <div class="card flexbox p-3" style="min-width: 400px; max-width: 800px; max-height: 500px; top: 250px;">
+        <div class="card flexbox p-3 mt-5" style="min-width: 400px; max-width: 800px; max-height: 500px;">
             <div id="image_box" style="height: 75%; overflow:auto">
                 <!-- Image added here with heatmap/boxes when uploaded using js -->
             </div>
@@ -40,11 +40,11 @@
                         processData: false,
                         contentType: false,
                         success: function(data, status){
-                          console.log("File upload success!")
+                          alert("Image uploaded successfully!");
                         }
                     });
                 } else {
-                    console.log("File upload failed!")
+                    alert("Image upload failed!");
                 }
             });
         });
