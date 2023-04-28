@@ -118,5 +118,4 @@ def check_svm():
 # Compare the models
 check_custom_model()
 check_random_forest()
-check_naive_bayes()
 check_svm()
