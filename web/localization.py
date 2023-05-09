@@ -3,6 +3,7 @@ import random
 
 from PIL import Image
 import cv2
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -17,6 +18,9 @@ from tensorflow.keras.models import *
 from tensorflow.keras.optimizers import *
 from tensorflow.keras.preprocessing.image import (ImageDataGenerator,
                                                   array_to_img, img_to_array)
+
+
+matplotlib.use('Agg')
 
 
 def set_seed(seed):
@@ -145,7 +149,7 @@ def save_activation_map(image_path):
 
     # Save the figure to the tmp folder
     file_name = os.path.splitext(os.path.basename(image_path))[0]
-    fig.savefig(os.path.join('tmp', f'{file_name}-overlayed.png'))
+    fig.savefig(os.path.join('tmp', f'{file_name}-output.png'))
     plt.close(fig)
     
 
