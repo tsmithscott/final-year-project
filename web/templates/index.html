@@ -11,11 +11,17 @@
 <body>
     <div id="content p-5" class="flexbox">
         <div class="card flexbox p-3 mt-5" style="min-width: 400px; max-width: 800px; max-height: 500px;">
-            <div id="image_box" style="height: 75%; overflow:auto">
-                <!-- Image added here with heatmap/boxes when uploaded using js -->
-            </div>
-            <div class="card-body">
-                <input type="file" accept="image/png, image/jpeg">
+            <div class="row">
+                <div id="image-box" class="col-8 nowrap" style="height: 75%; overflow:auto">
+                    <!-- Image added here with heatmap/boxes when uploaded using js -->
+                </div>
+                <div class="card-body col-8 nowrap flexbox">
+                    <div id="loader" style="display:none;">
+                        <img src="{{ url_for('static', filename='loading.gif') }}">
+                    </div>
+                    <h2 id="defective-status"></h2>
+                    <input type="file" accept="image/png, image/jpeg">
+                </div>
             </div>
         </div>
     </div>
@@ -27,20 +33,42 @@
                 let file = this.files[0];
                 let reader = new FileReader();
                 reader.onloadend = function () {
-                    $('#image_box').html('<image src="' + reader.result + '" style="max-width:100%;"/>');
+                    $('#image-box').html('<image id="img" src="' + reader.result + '" style="max-width:100%;"/>');
                 }
                 if (file) {
                     let formData = new FormData();
                     formData.append('raw_image', file);
                     reader.readAsDataURL(file);
                     $.ajax({
-                        url: "/upload",
+                        url: "/process-image",
                         type: 'POST',
                         data: formData,
                         processData: false,
                         contentType: false,
-                        success: function(data, status){
-                          alert("Image uploaded successfully!");
+                        beforeSend: function(){
+                            $("#image-box").hide();
+                            $("#loader").show();
+                        },
+                        success: function(response){
+                            $("#image-box").show();
+                            $("#loader").hide();
+                            if (response && response.length > 0) { // If the image is defective
+                                $("#defective-status").html("Defective");
+                                let blob = new Blob([response], {type: 'image/png'});
+                                let url = URL.createObjectURL(blob);
+                                let img = new Image();
+                                img.onload = function() {
+                                    URL.revokeObjectURL(this.src);
+                                };
+                                img.src = url;
+                                $("#img").attr("src", img.src);
+                            } else { // If the image is not defective
+                                $("#defective-status").html("Not Defective");
+                            }
+                        },
+                        error: function(xhr, desc, err){
+                            $("#loader").hide();
+                            alert("Something went wrong! Please try again.");
                         }
                     });
                 } else {
