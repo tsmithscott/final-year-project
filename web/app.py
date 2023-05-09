@@ -3,8 +3,9 @@ import threading
 import time
 import uuid
 from io import BytesIO
+import base64
 
-from flask import Flask, redirect, render_template, request, session, url_for, make_response
+from flask import Flask, redirect, render_template, request, session, url_for, make_response, jsonify
 from localization import is_defective, save_activation_map
 from PIL import Image
 
@@ -42,7 +43,6 @@ def upload():
         threading.Thread(target=garbage_collection, args=(image_path, 15), daemon=True).start()
         
         if defective:
-            print("Defective image detected")
             save_activation_map(image_path)
             # Plot and save the output image to the tmp folder + delete the image after 60 seconds
             threading.Thread(target=garbage_collection, args=(output_image_path, 60), daemon=True).start()
@@ -51,12 +51,13 @@ def upload():
                 image_data = BytesIO()
                 img.save(image_data, format='PNG')
                 image_data.seek(0)
-                
-            response = make_response(image_data.getvalue())
-            response.headers.set('Content-Type', 'image/png')
-            response.headers.set('Content-Disposition', 'attachment', filename='processed_image.png')
-            return response
+
+                # Encode the image data as base64
+                base64_image = base64.b64encode(image_data.getvalue()).decode()
+
+            response = {'image': base64_image}
+
+            return jsonify(response)
         else:
-            print("Non-defective image detected")
             return make_response("", 204)
     
