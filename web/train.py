@@ -14,39 +14,6 @@ from tensorflow.keras.optimizers import *
 from tensorflow.keras.preprocessing.image import (ImageDataGenerator,
                                                   array_to_img, img_to_array)
 
-### DEFINE SOME PARAMETERS ###
-base_path = "../dataset512x512/"
-SHAPE = (512,512,3)
-batch_size = 8
-
-### INITIALIZE GENERATORS ###
-train_datagen = ImageDataGenerator(
-        validation_split=0.3, rescale=1/255
-)
-test_datagen = ImageDataGenerator(
-        validation_split=0.3, rescale=1/255
-)
-
-### FLOW GENERATORS ###
-train_generator = train_datagen.flow_from_directory(
-            base_path,
-            target_size = (SHAPE[0], SHAPE[1]),
-            batch_size = batch_size,
-            class_mode = 'categorical',
-            shuffle = True,
-            subset = 'training',
-            seed = 33
-)
-test_generator = test_datagen.flow_from_directory(
-            base_path,
-            target_size = (SHAPE[0], SHAPE[1]),
-            batch_size = batch_size,
-            class_mode = 'categorical',
-            shuffle = True,
-            subset = 'validation',
-            seed = 33
-)
-
 
 def set_seed(seed):
     tf.random.set_seed(seed)
@@ -54,8 +21,8 @@ def set_seed(seed):
     np.random.seed(seed)
     random.seed(seed)
     
-    
-def get_model():
+
+def get_model(SHAPE: tuple):
     set_seed(33)
     
     vgg = vgg16.VGG16(weights='imagenet', include_top=False, input_shape = SHAPE)
@@ -75,9 +42,41 @@ def get_model():
 
 
 def train_model():
-    model = get_model()
+    ### DEFINE SOME PARAMETERS ###
+    base_path = "../dataset512x512/"
+    SHAPE = (512,512,3)
+    batch_size = 8
+
+    ### INITIALIZE GENERATORS ###
+    train_datagen = ImageDataGenerator(
+            validation_split=0.3, rescale=1/255
+    )
+    test_datagen = ImageDataGenerator(
+            validation_split=0.3, rescale=1/255
+    )
+    ### FLOW GENERATORS ###
+    train_generator = train_datagen.flow_from_directory(
+                base_path,
+                target_size = (SHAPE[0], SHAPE[1]),
+                batch_size = batch_size,
+                class_mode = 'categorical',
+                shuffle = True,
+                subset = 'training',
+                seed = 33
+    )
+    test_generator = test_datagen.flow_from_directory(
+                base_path,
+                target_size = (SHAPE[0], SHAPE[1]),
+                batch_size = batch_size,
+                class_mode = 'categorical',
+                shuffle = True,
+                subset = 'validation',
+                seed = 33
+    )
+    model = get_model(SHAPE)
     model.fit(train_generator, steps_per_epoch=train_generator.samples/train_generator.batch_size, epochs=50)
     model.save('model.h5')
 
 
-train_model()
+if __name__ == "__main__":
+    train_model()

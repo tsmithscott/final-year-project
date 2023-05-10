@@ -8,9 +8,12 @@ from tensorflow.keras.models import *
 from tensorflow.keras.optimizers import *
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
+from utils import load_trained_model
+
 
 if __name__ == "__main__":
     ### DEFINE SOME PARAMETERS ###
+    model = load_trained_model()
     base_path = "../dataset512x512/"
     SHAPE = (512,512,3)
     batch_size = 8
