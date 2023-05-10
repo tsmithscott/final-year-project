@@ -20,44 +20,13 @@ from tensorflow.keras.preprocessing.image import (ImageDataGenerator,
                                                   array_to_img, img_to_array)
 
 
-matplotlib.use('Agg')
-
-
-def set_seed(seed):
-    tf.random.set_seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
-    np.random.seed(seed)
-    random.seed(seed)
-    
-    
-def get_model():
-    set_seed(33)
-    
-    vgg = vgg16.VGG16(weights='imagenet', include_top=False, input_shape = SHAPE)
-
-    for layer in vgg.layers[:-8]:
-        layer.trainable = False
-
-    x = vgg.output
-    x = tf.keras.layers.GlobalAveragePooling2D()(x)
-    x = tf.keras.layers.Dense(2, activation="softmax")(x)
-
-    model = tf.keras.Model(vgg.input, x)
-    model.compile(loss = "categorical_crossentropy", 
-                  optimizer = tf.keras.optimizers.SGD(learning_rate=0.0001, momentum=0.9), metrics=["accuracy"])
-    
-    return model
-
-
-def train_model():
-    model = get_model()
-    model.fit(train_generator, steps_per_epoch=train_generator.samples/train_generator.batch_size, epochs=50)
-    model.save('model.h5')
+if not os.path.exists('model.h5'):
+    model = train_model()
+model = load_trained_model()
 
 
 def load_trained_model():
     return tf.keras.models.load_model('model.h5')
-
 
 def plot_dataset_activation():
     # Count the number of defective images
@@ -100,7 +69,6 @@ def plot_dataset_activation():
 
     plt.tight_layout()
     plt.show()
-
 
 def is_defective(image_path):
     with Image.open(image_path) as img:
@@ -151,59 +119,3 @@ def save_activation_map(image_path):
     file_name = os.path.splitext(os.path.basename(image_path))[0]
     fig.savefig(os.path.join('tmp', f'{file_name}-output.png'))
     plt.close(fig)
-    
-
-if not os.path.exists('model.h5'):
-    model = train_model()
-model = load_trained_model()
-
-
-
-if __name__ == "__main__":
-    ### DEFINE SOME PARAMETERS ###
-    base_path = "../dataset512x512/"
-    SHAPE = (512,512,3)
-    batch_size = 8
-    
-    ### INITIALIZE GENERATORS ###
-    train_datagen = train_datagen = ImageDataGenerator(
-            validation_split=0.3, rescale=1/255
-    )
-    test_datagen = ImageDataGenerator(
-            validation_split=0.3, rescale=1/255
-    )
-    
-    ### FLOW GENERATORS ###
-    train_generator = train_datagen.flow_from_directory(
-                base_path,
-                target_size = (SHAPE[0], SHAPE[1]),
-                batch_size = batch_size,
-                class_mode = 'categorical',
-                shuffle = True,
-                subset = 'training',
-                seed = 33
-    )
-    test_generator = test_datagen.flow_from_directory(
-                base_path,
-                target_size = (SHAPE[0], SHAPE[1]),
-                batch_size = batch_size,
-                class_mode = 'categorical',
-                shuffle = True,
-                subset = 'validation',
-                seed = 33
-    )
-
-
-    ### RETRIVE TEST LABEL FROM GENERATOR ###
-    test_num = test_generator.samples
-    label_test = []
-    for i in range((test_num // test_generator.batch_size)+1):
-        X,y = test_generator.next()
-        label_test.append(y)
-    label_test = np.argmax(np.vstack(label_test), axis=1)
-    label_test.shape
-
-    ### PERFORMANCE ON TEST DATA ###
-    print(classification_report(label_test, np.argmax(model.predict(test_generator),axis=1)))
-    # plot_dataset_activation()
-    save_activation_map("C:\\Programming\\FinalYearProject\\dataset512x512\\defective\\cast_def_0_255.jpeg")
