@@ -5,6 +5,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from tensorflow import keras
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import VGG16, InceptionV3, ResNet50, EfficientNetB0
 
 path = 'C:/Programming/FinalYearProject/dataset512x512'
 # path = '/Users/theo/VSCode/FinalYearProject/dataset512x512'
@@ -30,27 +31,27 @@ validation_generator = datagen.flow_from_directory(
     class_mode='binary',
     subset='validation')
 
-# Define the training data and labels for sklearn models
-X_train, y_train = [], []
-for i in range(len(train_generator)):
-    batch = train_generator[i]
-    X_train.extend(batch[0])
-    y_train.extend(batch[1])
-X_train = np.array(X_train)
-y_train = np.array(y_train)
 
-# Define the validation data and labels for sklearn models
-X_val, y_val = [], []
-for i in range(len(validation_generator)):
-    batch = validation_generator[i]
-    X_val.extend(batch[0])
-    y_val.extend(batch[1])
-X_val = np.array(X_val)
-y_val = np.array(y_val)
+# Calculate and print model performance metrics
+def print_metrics(y_true_classes, y_pred_classes):
+    tp = tf.keras.metrics.TruePositives()
+    tn = tf.keras.metrics.TrueNegatives()
+    fp = tf.keras.metrics.FalsePositives()
+    fn = tf.keras.metrics.FalseNegatives()
+    tp.update_state(y_true_classes, y_pred_classes)
+    tn.update_state(y_true_classes, y_pred_classes)
+    fp.update_state(y_true_classes, y_pred_classes)
+    fn.update_state(y_true_classes, y_pred_classes)
 
-# Reshape the data for sklearn models
-X_train = X_train.reshape(X_train.shape[0], -1)
-X_val = X_val.reshape(X_val.shape[0], -1)
+    accuracy = (tp.result() + tn.result()) / (tp.result() + tn.result() + fp.result() + fn.result())
+    precision = tp.result() / (tp.result() + fp.result())
+    recall = tp.result() / (tp.result() + fn.result())
+    f1_score = 2 * precision * recall / (precision + recall)
+
+    print("Accuracy: " + str(round(accuracy.numpy(), 3)))
+    print("Precision: " + str(round(precision.numpy(), 3)))
+    print("Recall: " + str(round(recall.numpy(), 3)))
+    print("F1 Score: " + str(round(f1_score.numpy(), 3)))
 
 
 # Train and evaluate custom keras model
@@ -76,47 +77,73 @@ def check_custom_model():
     custom_model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
               metrics=['accuracy'])
-    # Train the model
+    
+    # Training
     custom_model.fit(train_generator, epochs=50, validation_data=validation_generator)
-    # Cross-validate the model
+    
+    # Cross-validation
     scores = custom_model.evaluate(validation_generator, verbose=0)
+    
+    # Prediction
+    y_pred = custom_model.predict(validation_generator)
+    y_pred_classes = np.argmax(y_pred, axis=1)
+    
+    # Get the true classes and calculate the confusion matrix
+    y_true_classes = validation_generator.classes
+    conf_matrix = tf.math.confusion_matrix(labels=y_true_classes, predictions=y_pred_classes)
+    
+    # Print the metrics
+    print_metrics(y_true_classes, y_pred_classes)
     print("Custom Keras CNN Accuracy: %.2f%%" % (scores[1]*100))
+    tf.print(conf_matrix)
 
 
-# Train and evaluate Random Forest model
-def check_random_forest():
-    # Define the model
-    random_forest = RandomForestClassifier()
-    # Train the model
-    random_forest.fit(X_train, y_train)
-    # Cross-validate the model
-    scores = random_forest.score(X_val, y_val)
-    print("Random Forest Accuracy: %.2f%%" % (scores*100))
+def train_evaluate_pretrained_model(model_name):
+    print(f"Checking {model_name} model...")
     
-
-# Train and evaluate Naive Bayes model
-def check_naive_bayes():
     # Define the model
-    naive_bayes = GaussianNB()
-    # Train the model
-    naive_bayes.fit(X_train, y_train)
-    # Cross-validate the model
-    scores = naive_bayes.score(X_val, y_val)
-    print("Naive Bayes Accuracy: %.2f%%" % (scores*100))
+    if model_name == "vgg16":
+        base_model = VGG16(include_top=False, weights="imagenet", input_shape=(128, 128, 3))
+    elif model_name == "inceptionv3":
+        base_model = InceptionV3(include_top=False, weights="imagenet", input_shape=(128, 128, 3))
+    elif model_name == "resnet50":
+        base_model = ResNet50(include_top=False, weights="imagenet", input_shape=(128, 128, 3))
+    else:
+        raise ValueError(f"Invalid model name: {model_name}")
     
-
-# Train and evaluate SVM model
-def check_svm():
-    # Define the model
-    svm = SVC()
-    # Train the model
-    svm.fit(X_train, y_train)
-    # Cross-validate the model
-    scores = svm.score(X_val, y_val)
-    print("Support Vector Machine (SVM) Accuracy: %.2f%%" % (scores*100))
+    model = keras.Sequential([
+        tf.keras.layers.experimental.preprocessing.Resizing(128, 128),
+        base_model,
+        keras.layers.Flatten(),
+        keras.layers.Dense(1024, activation='relu'),
+        keras.layers.Dense(1024, activation='relu'),
+        keras.layers.Dense(2, activation='sigmoid')
+    ])
+    
+    # Compile the model
+    model.compile(optimizer='adam',
+                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+                  metrics=['accuracy'])
+    
+    # Cross-validation
+    scores = model.evaluate(validation_generator, verbose=0)
+    
+    # Prediction
+    y_pred = model.predict(validation_generator)
+    y_pred_classes = np.argmax(y_pred, axis=1)
+    
+    # Get the true classes and calculate the confusion matrix
+    y_true_classes = validation_generator.classes
+    conf_matrix = tf.math.confusion_matrix(labels=y_true_classes, predictions=y_pred_classes)
+    
+    # Print the metrics
+    print_metrics(y_true_classes, y_pred_classes)
+    print(f"{model_name.capitalize()} Accuracy: {scores[1] * 100:.2f}%")
+    tf.print(conf_matrix)
 
 
 # Compare the models
 check_custom_model()
-check_random_forest()
-check_svm()
+train_evaluate_pretrained_model("vgg16")
+train_evaluate_pretrained_model("inceptionv3")
+train_evaluate_pretrained_model("resnet50")

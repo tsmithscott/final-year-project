@@ -64,7 +64,7 @@ def train_model():
                 subset = 'training',
                 seed = 33
     )
-    test_generator = test_datagen.flow_from_directory(
+    validation_generator = test_datagen.flow_from_directory(
                 base_path,
                 target_size = (SHAPE[0], SHAPE[1]),
                 batch_size = batch_size,
