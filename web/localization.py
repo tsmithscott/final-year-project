@@ -36,15 +36,15 @@ def is_defective(image_path):
         return False
 
 
+weights = model.layers[-1].get_weights()[0]
+class_weights = weights[:, 0]
+intermediate = tf.keras.Model(model.input, model.get_layer("block5_conv3").output)
+
 def save_activation_map(image_path):
     # Load the image file and convert it to a NumPy array
     with Image.open(image_path) as img:
         image = np.array(img)
-
-    weights = model.layers[-1].get_weights()[0]
-    class_weights = weights[:, 0]
-
-    intermediate = tf.keras.Model(model.input, model.get_layer("block5_conv3").output)
+    
     conv_output = intermediate.predict(image[np.newaxis,:,:,:])
     conv_output = np.squeeze(conv_output)
 
@@ -55,14 +55,11 @@ def save_activation_map(image_path):
     out = np.dot(activation_maps.reshape((image.shape[0]*image.shape[1], 512)), class_weights).reshape(
         image.shape[0],image.shape[1])
 
-    fig, axs = plt.subplots(1, 2, figsize=(12, 6))
-    axs[0].imshow(image)
-    axs[0].set_title('Original Image')
-    axs[0].axis('off')
-    axs[1].imshow(image)
-    axs[1].imshow(out, cmap='jet', alpha=0.35)
-    axs[1].set_title('Activation Map Overlay')
-    axs[1].axis('off')
+    fig, axs = plt.subplots(figsize=(6, 6))
+    axs.imshow(image)
+    axs.imshow(out, cmap='jet', alpha=0.35)
+    axs.axis('off')
+    plt.tight_layout()
 
     # Save the figure to the tmp folder
     file_name = os.path.splitext(os.path.basename(image_path))[0]

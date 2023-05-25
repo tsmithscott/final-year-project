@@ -11,10 +11,10 @@
 <body>
     <div id="content p-5" class="flexbox">
         <div class="card flexbox p-3 mt-5" style="min-width: 400px; max-width: 800px; max-height: 500px;">
-            <div class="card-body flexbox nowrap">
+            <div class="card-body flexbox">
                 <div class="row">
-                    <div class="col" style="width: 40%;">
-                        <div id="image-box" style="overflow:auto">
+                    <div class="col p-4">
+                        <div id="image-box">
                             <!-- Image added here with heatmap/boxes when uploaded using js -->
                         </div>
                     </div>
@@ -45,7 +45,7 @@
                 let file = this.files[0];
                 let reader = new FileReader();
                 reader.onloadend = function () {
-                    $('#image-box').html('<image id="img" src="' + reader.result + '"/>');
+                    $('#image-box').html('<image id="img" src="' + reader.result + '" style="max-width: 100%;"/>');
                 }
                 if (file) {
                     let formData = new FormData();
