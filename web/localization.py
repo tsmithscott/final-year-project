@@ -8,7 +8,7 @@ import tensorflow as tf
 from PIL import Image
 
 from train import train_model
-from utils import load_trained_model
+from tensorflow.keras.models import load_model
 
 matplotlib.use('Agg')
 
@@ -16,7 +16,7 @@ if not os.path.exists('model.h5'):
     print("Model not found!\nTraining model...")
     model = train_model()
 print("Loading trained model...")
-model = load_trained_model()
+model = load_model('model.h5')
 
 
 def is_defective(image_path):
@@ -44,6 +44,8 @@ def save_activation_map(image_path):
     # Load the image file and convert it to a NumPy array
     with Image.open(image_path) as img:
         image = np.array(img)
+    
+    image = tf.image.resize(image, [128, 128])
     
     conv_output = intermediate.predict(image[np.newaxis,:,:,:])
     conv_output = np.squeeze(conv_output)

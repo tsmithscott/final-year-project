@@ -15,17 +15,17 @@ batch_size = 8
 # Load and preprocess the datasets
 root_dir = 'C:/Programming/FinalYearProject/dataset512x512'
 train_datagen = ImageDataGenerator(
-        validation_split=0.2, rescale=1/255
+        validation_split=0.2, rescale=1./255
 )
 test_datagen = ImageDataGenerator(
-        validation_split=0.2, rescale=1/255
+        validation_split=0.2, rescale=1./255
 )
 train_generator = train_datagen.flow_from_directory(
             root_dir,
             target_size = (SHAPE[0], SHAPE[1]),
             batch_size = batch_size,
             class_mode = 'categorical',
-            shuffle = True,
+            shuffle = False,
             subset = 'training',
             seed = 33
 )
@@ -34,7 +34,7 @@ validation_generator = test_datagen.flow_from_directory(
             target_size = (SHAPE[0], SHAPE[1]),
             batch_size = batch_size,
             class_mode = 'categorical',
-            shuffle = True,
+            shuffle = False,
             subset = 'validation',
             seed = 33
 )
@@ -63,7 +63,7 @@ def get_custom_model():
         Dense(2, activation='sigmoid')
     ])
     model.compile(optimizer=Adam(learning_rate=0.0001),
-                        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+                        loss="categorical_crossentropy",
                         metrics=['accuracy'])
     
     return model
@@ -71,6 +71,9 @@ def get_custom_model():
 
 def get_model(name: str, SHAPE: tuple):
     set_seed(33)
+    
+    if name == "custom":
+        return get_custom_model()
     
     if name == "vgg16":
         base_model = VGG16(weights='imagenet', include_top=False, input_shape=SHAPE)
@@ -107,6 +110,60 @@ def train_model(name: str, model):
     model.save(f'trained-{name}.h5')
     print(f"Saved model: trained-{name}.h5")
     
+    
+# Define a function to calculate TP, TN, FP, FN rates
+def calculate_rates(y_true_labels, y_pred_labels):
+
+    # Calculate the confusion matrix metrics
+    tn = tf.keras.metrics.TrueNegatives()
+    tn.update_state(y_true_labels, y_pred_labels)
+
+    fp = tf.keras.metrics.FalsePositives()
+    fp.update_state(y_true_labels, y_pred_labels)
+
+    fn = tf.keras.metrics.FalseNegatives()
+    fn.update_state(y_true_labels, y_pred_labels)
+
+    tp = tf.keras.metrics.TruePositives()
+    tp.update_state(y_true_labels, y_pred_labels)
+
+    # Get the TP, TN, FP, FN rates
+    tp_rate = tp.result().numpy()
+    tn_rate = tn.result().numpy()
+    fp_rate = fp.result().numpy()
+    fn_rate = fn.result().numpy()
+
+    return tp_rate, tn_rate, fp_rate, fn_rate
+
+    
+def calculate_metrics(y_true, y_pred, name: str):
+    tp, tn, fp, fn = calculate_rates(y_true, y_pred)
+
+    # Calculate the accuracy, precision, recall, and F1-score
+    accuracy = (tp + tn) / (tp + tn + fp + fn)
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    f1_score = 2 * precision * recall / (precision + recall)
+
+    print("\n===============================================")
+    print("{}".format(name))
+    # Print the confusion matrix
+    print("Confusion Matrix:")
+    print("           Predicted Negative   Predicted Positive")
+    print("Actual Negative       {}                 {}".format(tn, fp))
+    print("Actual Positive       {}                 {}".format(fn, tp))
+    # Print the performance metrics
+    print("Accuracy: {:.3f}".format(accuracy))
+    print("Precision: {:.3f}".format(precision))
+    print("Recall: {:.3f}".format(recall))
+    print("F1-score: {:.3f}".format(f1_score))
+    print("===============================================\n")
+
+
+def evaluate_model(model, y_true, name: str):
+    y_pred = model.predict(validation_generator, verbose=0)
+    y_pred = np.argmax(y_pred, axis=1)
+    calculate_metrics(y_true, y_pred, name)
 
 
 ### DEFINE MODELS FOR TRAINING ###
@@ -119,5 +176,16 @@ def train_model(name: str, model):
 # trained_vgg16 = train_model("vgg16", vgg16)
 # trained_inceptionv3 = train_model("inceptionv3", inceptionv3)
 # trained_resnet50 = train_model("resnet50", resnet50)
+### LOAD TRAINED MODELS ###
+custom = tf.keras.models.load_model('trained-custom.h5')
+vgg16 = tf.keras.models.load_model('trained-vgg16.h5')
+inceptionv3 = tf.keras.models.load_model('trained-inceptionv3.h5')
+resnet50 = tf.keras.models.load_model('trained-resnet50.h5')
+### EVALUATE MODELS - DISABLE SHUFFLE ON DATASETS ### 
+y_true = validation_generator.classes
 
+evaluate_model(custom, y_true,"Custom Model")
+evaluate_model(vgg16, y_true,"VGG16 (Transfer Learning)")
+evaluate_model(inceptionv3, y_true,"InceptionV3 (Transfer Learning)")
+evaluate_model(resnet50, y_true,"ResNet50 (Transfer Learning)")
 
