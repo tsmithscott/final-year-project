@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.keras import Sequential
 from tensorflow.keras.layers.experimental.preprocessing import Rescaling, Resizing
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from tensorflow.keras.optimizers import Adam
@@ -31,7 +32,7 @@ val_ds = tf.keras.preprocessing.image_dataset_from_directory(
 )
 
 def build_model(learning_rate, dropout_rate):
-    model = tf.keras.Sequential([
+    model = Sequential([
         Rescaling(1./255, input_shape=(512, 512, 3)),
         Resizing(128, 128),
         Conv2D(32, 3, padding='same', activation='relu'),
