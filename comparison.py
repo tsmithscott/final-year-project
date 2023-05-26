@@ -113,20 +113,15 @@ def train_model(name: str, model):
     
 # Define a function to calculate TP, TN, FP, FN rates
 def calculate_rates(y_true_labels, y_pred_labels):
-
     # Calculate the confusion matrix metrics
     tn = tf.keras.metrics.TrueNegatives()
     tn.update_state(y_true_labels, y_pred_labels)
-
     fp = tf.keras.metrics.FalsePositives()
     fp.update_state(y_true_labels, y_pred_labels)
-
     fn = tf.keras.metrics.FalseNegatives()
     fn.update_state(y_true_labels, y_pred_labels)
-
     tp = tf.keras.metrics.TruePositives()
     tp.update_state(y_true_labels, y_pred_labels)
-
     # Get the TP, TN, FP, FN rates
     tp_rate = tp.result().numpy()
     tn_rate = tn.result().numpy()
@@ -135,7 +130,7 @@ def calculate_rates(y_true_labels, y_pred_labels):
 
     return tp_rate, tn_rate, fp_rate, fn_rate
 
-    
+
 def calculate_metrics(y_true, y_pred, name: str):
     tp, tn, fp, fn = calculate_rates(y_true, y_pred)
 
@@ -166,26 +161,37 @@ def evaluate_model(model, y_true, name: str):
     calculate_metrics(y_true, y_pred, name)
 
 
-### DEFINE MODELS FOR TRAINING ###
-# custom_model = get_custom_model()
-# vgg16 = get_model("vgg16", SHAPE)
-# inceptionv3 = get_model("inceptionv3", SHAPE)
-# resnet50 = get_model("resnet50", SHAPE)
-### TRAIN MODELS ###
-# trained_custom_model = train_model("custom", custom_model)
-# trained_vgg16 = train_model("vgg16", vgg16)
-# trained_inceptionv3 = train_model("inceptionv3", inceptionv3)
-# trained_resnet50 = train_model("resnet50", resnet50)
-### LOAD TRAINED MODELS ###
-custom = tf.keras.models.load_model('trained-custom.h5')
-vgg16 = tf.keras.models.load_model('trained-vgg16.h5')
-inceptionv3 = tf.keras.models.load_model('trained-inceptionv3.h5')
-resnet50 = tf.keras.models.load_model('trained-resnet50.h5')
-### EVALUATE MODELS - DISABLE SHUFFLE ON DATASETS ### 
-y_true = validation_generator.classes
+def train_models():
+    ### TRAIN MODELS ###
+    custom_model = get_custom_model()
+    vgg16 = get_model("vgg16", SHAPE)
+    inceptionv3 = get_model("inceptionv3", SHAPE)
+    resnet50 = get_model("resnet50", SHAPE)
+    trained_custom_model = train_model("custom", custom_model)
+    trained_vgg16 = train_model("vgg16", vgg16)
+    trained_inceptionv3 = train_model("inceptionv3", inceptionv3)
+    trained_resnet50 = train_model("resnet50", resnet50)
 
-evaluate_model(custom, y_true,"Custom Model")
-evaluate_model(vgg16, y_true,"VGG16 (Transfer Learning)")
-evaluate_model(inceptionv3, y_true,"InceptionV3 (Transfer Learning)")
-evaluate_model(resnet50, y_true,"ResNet50 (Transfer Learning)")
 
+def load_trained_models():
+    ### LOAD TRAINED MODELS ###
+    custom = tf.keras.models.load_model('trained-custom.h5')
+    vgg16 = tf.keras.models.load_model('trained-vgg16.h5')
+    inceptionv3 = tf.keras.models.load_model('trained-inceptionv3.h5')
+    resnet50 = tf.keras.models.load_model('trained-resnet50.h5')
+    
+    return custom, vgg16, inceptionv3, resnet50
+
+
+def evaluate_models(custom, vgg16, inceptionv3, resnet50):
+    ### EVALUATE MODELS - DISABLE SHUFFLE ON DATASETS ### 
+    y_true = validation_generator.classes
+    evaluate_model(custom, y_true,"Custom Model")
+    evaluate_model(vgg16, y_true,"VGG16 (Transfer Learning)")
+    evaluate_model(inceptionv3, y_true,"InceptionV3 (Transfer Learning)")
+    evaluate_model(resnet50, y_true,"ResNet50 (Transfer Learning)")
+
+
+# train_models()
+custom, vgg16, inceptionv3, resnet50 = load_trained_models()
+evaluate_models(custom, vgg16, inceptionv3, resnet50)

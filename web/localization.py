@@ -12,11 +12,11 @@ from tensorflow.keras.models import load_model
 
 matplotlib.use('Agg')
 
-if not os.path.exists('model.h5'):
+if not os.path.exists('trained-vgg16.h5'):
     print("Model not found!\nTraining model...")
     model = train_model()
 print("Loading trained model...")
-model = load_model('model.h5')
+model = load_model('trained-vgg16.h5')
 
 
 def is_defective(image_path):
