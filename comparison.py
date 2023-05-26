@@ -10,8 +10,10 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 # Define variables
+SHUFFLE = False
 SHAPE = (128, 128, 3)
 batch_size = 8
+
 # Load and preprocess the datasets
 root_dir = 'C:/Programming/FinalYearProject/dataset512x512'
 train_datagen = ImageDataGenerator(
@@ -25,7 +27,7 @@ train_generator = train_datagen.flow_from_directory(
             target_size = (SHAPE[0], SHAPE[1]),
             batch_size = batch_size,
             class_mode = 'categorical',
-            shuffle = False,
+            shuffle = SHUFFLE,
             subset = 'training',
             seed = 33
 )
@@ -34,7 +36,7 @@ validation_generator = test_datagen.flow_from_directory(
             target_size = (SHAPE[0], SHAPE[1]),
             batch_size = batch_size,
             class_mode = 'categorical',
-            shuffle = False,
+            shuffle = SHUFFLE,
             subset = 'validation',
             seed = 33
 )
@@ -49,7 +51,7 @@ def set_seed(seed):
 
 def get_custom_model():
     model = Sequential([
-        Conv2D(32, 3, padding='same', activation='relu', input_shape=(128, 128, 3)),
+        Conv2D(32, 3, padding='same', activation='relu', input_shape=SHAPE),
         MaxPooling2D(),
         Conv2D(64, 3, padding='same', activation='relu'),
         Conv2D(64, 3, padding='same', activation='relu'),
@@ -171,6 +173,8 @@ def train_models():
     trained_vgg16 = train_model("vgg16", vgg16)
     trained_inceptionv3 = train_model("inceptionv3", inceptionv3)
     trained_resnet50 = train_model("resnet50", resnet50)
+    
+    return trained_custom_model, trained_vgg16, trained_inceptionv3, trained_resnet50
 
 
 def load_trained_models():
@@ -192,6 +196,9 @@ def evaluate_models(custom, vgg16, inceptionv3, resnet50):
     evaluate_model(resnet50, y_true,"ResNet50 (Transfer Learning)")
 
 
-# train_models()
+### UNCOMMENT FOR TRAINING + CHANGE SHUFFLE TO TRUE ###
+# custom, vgg16, inceptionv3, resnet50 = train_models()
+
+### UNCOMMENT FOR EVALUATION + CHANGE SHUFFLE TO FALSE  ###
 custom, vgg16, inceptionv3, resnet50 = load_trained_models()
 evaluate_models(custom, vgg16, inceptionv3, resnet50)
