@@ -12,11 +12,11 @@ from tensorflow.keras.models import load_model
 
 matplotlib.use('Agg')
 
-if not os.path.exists('trained-vgg16.h5'):
+if not os.path.exists('transfer-trained-vgg16.h5'):
     print("Model not found!\nTraining model...")
     model = train_model()
 print("Loading trained model...")
-model = load_model('trained-vgg16.h5')
+model = load_model('transfer-trained-vgg16.h5')
 
 
 def is_defective(image_path):
@@ -45,7 +45,7 @@ def save_activation_map(image_path):
     with Image.open(image_path) as img:
         image = np.array(img)
     
-    image = tf.image.resize(image, [128, 128])
+    # image = tf.image.resize(image, [128, 128])
     
     conv_output = intermediate.predict(image[np.newaxis,:,:,:])
     conv_output = np.squeeze(conv_output)
