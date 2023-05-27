@@ -76,21 +76,22 @@ def optimize_model(learning_rate, dropout_rate):
     return best_val_accuracy
 
 
-# Define the hyperparameter search space
-hyperparameter_space = {
-    'learning_rate': (0.0005, 0.001),
-    'dropout_rate': (0.2, 0.5)
-}
+if __name__ == '__main__':
+    # Define the hyperparameter search space
+    hyperparameter_space = {
+        'learning_rate': (0.0005, 0.001),
+        'dropout_rate': (0.2, 0.5)
+    }
 
-# Perform Bayesian optimization
-optimizer = BayesianOptimization(f=optimize_model, pbounds=hyperparameter_space, verbose=2)
-optimizer.maximize(init_points=3, n_iter=10)
+    # Perform Bayesian optimization
+    optimizer = BayesianOptimization(f=optimize_model, pbounds=hyperparameter_space, verbose=2)
+    optimizer.maximize(init_points=3, n_iter=10)
 
-# Get the best hyperparameters and the corresponding validation accuracy
-best_hyperparameters = optimizer.max['params']
-best_val_accuracy = optimizer.max['target']
+    # Get the best hyperparameters and the corresponding validation accuracy
+    best_hyperparameters = optimizer.max['params']
+    best_val_accuracy = optimizer.max['target']
 
-print("Best Hyperparameters:")
-print(best_hyperparameters)
-print("Best Validation Accuracy:")
-print(best_val_accuracy)
+    print("Best Hyperparameters:")
+    print(best_hyperparameters)
+    print("Best Validation Accuracy:")
+    print(best_val_accuracy)
