@@ -78,8 +78,8 @@ def optimize_model(learning_rate, dropout_rate):
 
 # Define the hyperparameter search space
 hyperparameter_space = {
-    'learning_rate': (0.001, 0.01),
-    'dropout_rate': (0.0, 0.5)
+    'learning_rate': (0.0005, 0.001),
+    'dropout_rate': (0.2, 0.5)
 }
 
 # Perform Bayesian optimization
