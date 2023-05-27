@@ -39,8 +39,9 @@ def upload():
         image.save(image_path)
         
         # Check if the image is defective + delete the image after 15 seconds
-        defective = is_defective(image_path)
         threading.Thread(target=garbage_collection, args=(image_path, 15), daemon=True).start()
+        
+        defective, confidence = is_defective(image_path)
         
         if defective:
             save_activation_map(image_path)
@@ -54,10 +55,15 @@ def upload():
 
                 # Encode the image data as base64
                 base64_image = base64.b64encode(image_data.getvalue()).decode()
-
-            response = {'image': base64_image}
+                
+            response = {'image': base64_image,
+                        'is_defective': defective,
+                        'confidence': confidence}
 
             return jsonify(response)
         else:
-            return make_response("", 204)
+            response = {'is_defective': defective,
+                        'confidence': confidence}
+            
+            return jsonify(response)
     
