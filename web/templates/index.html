@@ -28,7 +28,8 @@
                 </div>
                 <div class="row">
                     <div class="col">
-                        <h2 id="defective-status"></h2><br /><br />
+                        <h2 id="defective-status"></h2>
+                        <h5 id="confidence"></h5>
                     </div>
                     <div class="col">
                         <input type="file" accept="image/png, image/jpeg">
@@ -61,16 +62,23 @@
                             $("#image-box").hide();
                             $("#loader").show();
                             $("#defective-status").html("");
+                            $("#confidence").html("");
                         },
                         success: function(response){
                             $("#image-box").show();
                             $("#loader").hide();
-                            if (response && response.image) {
-                                $("#defective-status").html("Defective");
-                                let base64data = response.image;
-                                $("#img").attr("src", "data:image/png;base64," + base64data);
+                            if (response && response.is_defective !== undefined) {
+                                var confidence = response.confidence;
+                                $("#confidence").html("Confidence: " + confidence.toFixed(2) + "%");
+                                if (response.is_defective) {
+                                    $("#defective-status").html("Defective");
+                                    let base64data = response.image;
+                                    $("#img").attr("src", "data:image/png;base64," + base64data);
+                                } else {
+                                    $("#defective-status").html("Not Defective");
+                                }
                             } else {
-                                $("#defective-status").html("Not Defective");
+                                alert("Invalid response from the server.");
                             }
                         },
                         error: function(xhr, desc, err){

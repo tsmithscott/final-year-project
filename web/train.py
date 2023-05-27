@@ -36,7 +36,8 @@ def get_model(SHAPE: tuple):
 
     model = tf.keras.Model(vgg.input, x)
     model.compile(loss = "categorical_crossentropy",
-                  optimizer = tf.keras.optimizers.SGD(learning_rate=0.0001, momentum=0.9), metrics=["accuracy"])
+                  optimizer = Adam(learning_rate=0.0001), 
+                  metrics=["accuracy"])
     
     return model
 
