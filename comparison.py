@@ -9,6 +9,15 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
+# Prevent GPU memory allocation issues
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+  try:
+    for gpu in gpus:
+      tf.config.experimental.set_memory_growth(gpu, True)
+  except RuntimeError as e:
+    print(e)
+
 # Define variables
 SHUFFLE = False
 SHAPE = (128, 128, 3)
@@ -49,7 +58,7 @@ def set_seed(seed):
     random.seed(seed)
 
 
-def get_custom_model():
+def build_custom_model(SHAPE: tuple):
     model = Sequential([
         Conv2D(32, 3, padding='same', activation='relu', input_shape=SHAPE),
         MaxPooling2D(),
@@ -71,11 +80,11 @@ def get_custom_model():
     return model
 
 
-def get_model(name: str, SHAPE: tuple):
+def build_model(name: str, SHAPE: tuple):
     set_seed(33)
     
     if name == "custom":
-        return get_custom_model()
+        return build_custom_model(SHAPE)
     
     if name == "vgg16":
         base_model = VGG16(weights='imagenet', include_top=False, input_shape=SHAPE)
@@ -89,7 +98,7 @@ def get_model(name: str, SHAPE: tuple):
     else:
         raise Exception("Invalid model name")
         
-    for layer in base_model.layers[:-8]:
+    for layer in base_model.layers[:-5]:
             layer.trainable = False    
     
     x = base_model.output
@@ -165,10 +174,10 @@ def evaluate_model(model, y_true, name: str):
 
 def train_models():
     ### TRAIN MODELS ###
-    custom_model = get_custom_model()
-    vgg16 = get_model("vgg16", SHAPE)
-    inceptionv3 = get_model("inceptionv3", SHAPE)
-    resnet50 = get_model("resnet50", SHAPE)
+    custom_model = build_model("custom", SHAPE)
+    vgg16 = build_model("vgg16", SHAPE)
+    inceptionv3 = build_model("inceptionv3", SHAPE)
+    resnet50 = build_model("resnet50", SHAPE)
     trained_custom_model = train_model("custom", custom_model)
     trained_vgg16 = train_model("vgg16", vgg16)
     trained_inceptionv3 = train_model("inceptionv3", inceptionv3)
@@ -197,7 +206,7 @@ def evaluate_models(custom, vgg16, inceptionv3, resnet50):
 
 
 ### UNCOMMENT FOR TRAINING + CHANGE SHUFFLE TO TRUE ###
-# custom, vgg16, inceptionv3, resnet50 = train_models()
+# train_models()
 
 ### UNCOMMENT FOR EVALUATION + CHANGE SHUFFLE TO FALSE  ###
 custom, vgg16, inceptionv3, resnet50 = load_trained_models()
