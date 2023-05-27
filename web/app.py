@@ -39,7 +39,8 @@ def upload():
         image.save(image_path)
         
         # Check if the image is defective + delete the image after 15 seconds
-        defective = is_defective(image_path)
+        defective, confidence = is_defective(image_path)
+        print(f"Defective: {defective}, Confidence: {confidence}")
         threading.Thread(target=garbage_collection, args=(image_path, 15), daemon=True).start()
         
         if defective:
@@ -54,7 +55,7 @@ def upload():
 
                 # Encode the image data as base64
                 base64_image = base64.b64encode(image_data.getvalue()).decode()
-
+                
             response = {'image': base64_image}
 
             return jsonify(response)

@@ -36,7 +36,7 @@ def get_model(SHAPE: tuple):
 
     model = tf.keras.Model(vgg.input, x)
     model.compile(loss = "categorical_crossentropy",
-                  optimizer = tf.keras.optimizers.SGD(learning_rate=0.001, momentum=0.9), metrics=["accuracy"])
+                  optimizer = tf.keras.optimizers.SGD(learning_rate=0.0001, momentum=0.9), metrics=["accuracy"])
     
     return model
 
@@ -44,7 +44,7 @@ def get_model(SHAPE: tuple):
 def train_model():
     # Define variables
     SHUFFLE = True
-    SHAPE = (128, 128, 3)
+    SHAPE = (512, 512, 3)
     batch_size = 8
 
     # Load and preprocess the datasets
@@ -76,7 +76,7 @@ def train_model():
     model = get_model(SHAPE)
     model.fit(train_generator,
               validation_data=validation_generator,
-              epochs=10)
+              epochs=50)
     model.save('transfer-trained-vgg16.h5')
 
 
