@@ -3,14 +3,7 @@ import random
 
 import numpy as np
 import tensorflow as tf
-from PIL import Image
-from sklearn.metrics import (accuracy_score, classification_report,
-                             confusion_matrix)
-from sklearn.model_selection import train_test_split
-from tensorflow.keras import Sequential
 from tensorflow.keras.applications import VGG16
-from tensorflow.keras.layers.experimental.preprocessing import Rescaling, Resizing
-from tensorflow.keras.layers import Conv2D, Dense, Flatten, MaxPooling2D
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 

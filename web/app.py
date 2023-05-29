@@ -5,7 +5,7 @@ import uuid
 from io import BytesIO
 import base64
 
-from flask import Flask, redirect, render_template, request, session, url_for, make_response, jsonify
+from flask import Flask, render_template, request, jsonify
 from localization import is_defective, save_activation_map
 from PIL import Image
 
