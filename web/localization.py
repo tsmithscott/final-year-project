@@ -21,6 +21,7 @@ model = load_model('transfer-trained-vgg16.h5')
 
 def is_defective(image_path):
     with Image.open(image_path) as img:
+        img = img.resize((512, 512))
         image = np.array(img)
     
     # Normalize the image
@@ -44,6 +45,7 @@ intermediate = tf.keras.Model(model.input, model.get_layer("block5_conv3").outpu
 def save_activation_map(image_path):
     # Load the image file and convert it to a NumPy array
     with Image.open(image_path) as img:
+        img = img.resize((512, 512))
         image = np.array(img)
     
     conv_output = intermediate.predict(image[np.newaxis,:,:,:])
