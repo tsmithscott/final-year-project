@@ -19,7 +19,7 @@ if gpus:
     print(e)
 
 # Define variables
-SHUFFLE = False
+SHUFFLE = True
 SHAPE = (128, 128, 3)
 batch_size = 8
 
@@ -114,12 +114,14 @@ def build_model(name: str, SHAPE: tuple):
 
 def train_model(name: str, model):
     
-    model.fit(train_generator,
+    history = model.fit(train_generator,
               validation_data=validation_generator,
               steps_per_epoch=train_generator.samples/train_generator.batch_size,
               epochs=10)
     model.save(f'trained-{name}.h5')
     print(f"Saved model: trained-{name}.h5")
+    
+    return history
     
     
 # Define a function to calculate TP, TN, FP, FN rates
@@ -183,6 +185,17 @@ def train_models():
     trained_inceptionv3 = train_model("inceptionv3", inceptionv3)
     trained_resnet50 = train_model("resnet50", resnet50)
     
+    # Get the training accuracy of each model
+    custom_model_training_accuracy = trained_custom_model.history['accuracy'][-1]
+    vgg16_training_accuracy = trained_vgg16.history['accuracy'][-1]
+    inceptionv3_training_accuracy = trained_inceptionv3.history['accuracy'][-1]
+    resnet50_training_accuracy = trained_resnet50.history['accuracy'][-1]
+    # Output the training accuracy of each model
+    print("Custom Model Training Accuracy: ", custom_model_training_accuracy)
+    print("VGG16 Training Accuracy: ", vgg16_training_accuracy)
+    print("InceptionV3 Training Accuracy: ", inceptionv3_training_accuracy)
+    print("ResNet50 Training Accuracy: ", resnet50_training_accuracy)
+    
     return trained_custom_model, trained_vgg16, trained_inceptionv3, trained_resnet50
 
 
@@ -206,8 +219,8 @@ def evaluate_models(custom, vgg16, inceptionv3, resnet50):
 
 
 ### UNCOMMENT FOR TRAINING + CHANGE SHUFFLE TO TRUE ###
-# train_models()
+train_models()
 
 ### UNCOMMENT FOR EVALUATION + CHANGE SHUFFLE TO FALSE  ###
-custom, vgg16, inceptionv3, resnet50 = load_trained_models()
-evaluate_models(custom, vgg16, inceptionv3, resnet50)
+# custom, vgg16, inceptionv3, resnet50 = load_trained_models()
+# evaluate_models(custom, vgg16, inceptionv3, resnet50)
