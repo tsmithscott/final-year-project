@@ -22,7 +22,7 @@ def garbage_collection(path: str, time_seconds: int):
 
 @app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html', defective=None)
+    return render_template('index.html')
 
 @app.route('/process-image', methods=['POST'])
 def upload():
