@@ -5,7 +5,7 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from tensorflow.keras.optimizers import Adam
 from bayes_opt import BayesianOptimization
 
-root_dir = 'C:/Programming/FinalYearProject/dataset512x512'
+root_dir = 'C:/Users/theos/PycharmProjects/FinalYearProject/dataset512x512'
 
 # Define your train and validation datasets
 train_ds = tf.keras.preprocessing.image_dataset_from_directory(

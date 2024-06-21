@@ -1,7 +1,7 @@
 import tensorflow as tf
 from matplotlib import pyplot as plt
 
-root_dir = 'C:/Programming/FinalYearProject/dataset512x512'
+root_dir = 'C:/Users/theos/PycharmProjects/FinalYearProject/dataset512x512'
 
 # Define your train and validation datasets
 train_ds = tf.keras.preprocessing.image_dataset_from_directory(

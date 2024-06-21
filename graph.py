@@ -8,7 +8,7 @@ DROPOUT_RATE = 0.46386941186999164
 
 model = build_model(LEARNING_RATE, DROPOUT_RATE)
 history = model.fit(train_ds, validation_data=val_ds, epochs=EPOCHS, verbose=1)
-model.save('C:/Programming/FinalYearProject/tuned-trained-model.h5')
+model.save('C:/Users/theos/PycharmProjects/FinalYearProject/tuned-trained-model.h5')
 
 ## Assigning the history of the model to variables
 acc = history.history['accuracy']

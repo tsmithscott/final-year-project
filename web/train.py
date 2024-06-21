@@ -42,7 +42,7 @@ def train_model():
     batch_size = 8
 
     # Load and preprocess the datasets
-    root_dir = 'C:/Programming/FinalYearProject/dataset512x512'
+    root_dir = 'C:/Users/theos/PycharmProjects/FinalYearProject/dataset512x512'
     train_datagen = ImageDataGenerator(
             validation_split=0.2, rescale=1./255
     )
